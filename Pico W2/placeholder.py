@@ -39,6 +39,7 @@ def main():
         energy = int(inp[0])
 
         if energy == -1:
+            LedTurnOff()
             return
 
         LedTurnOff()
