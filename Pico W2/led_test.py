@@ -1,12 +1,5 @@
-from machine import Pin
 from utime import sleep_ms
-
-
-ledWhite = Pin(0, Pin.OUT)
-ledBlue = Pin(1, Pin.OUT)
-ledGreen = Pin(2, Pin.OUT)
-ledYellow = Pin(3, Pin.OUT)
-ledRed  = Pin(4, Pin.OUT)
+from machine import Pin
 
 class LED(enumerate):
     WHITE = 0
@@ -14,6 +7,12 @@ class LED(enumerate):
     GREEN = 2
     YELLOW = 3
     RED = 4
+
+ledWhite = Pin(0, Pin.OUT)
+ledBlue = Pin(1, Pin.OUT)
+ledGreen = Pin(2, Pin.OUT)
+ledYellow = Pin(3, Pin.OUT)
+ledRed  = Pin(4, Pin.OUT)
 
 def LedSelect(_LED):
     if _LED == LED.WHITE:
@@ -26,7 +25,6 @@ def LedSelect(_LED):
         ledYellow.toggle()
     elif _LED == LED.RED:
         ledRed.toggle()
-
 
 def main():
     # Setting LEDS to Low
