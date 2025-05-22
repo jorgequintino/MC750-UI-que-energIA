@@ -17,3 +17,22 @@ Instale o pacote dotenv, para importação das KEYs confidenciais:
 ```bash
 pip install dotenv
 ```
+
+
+
+Script
+
+Instale os pacotes:
+```bash
+pip install -r requirements.txt
+```
+
+Execute o servidor Flask:
+```bash
+python app.py
+```
+
+Acesse em:
+```bash
+http://127.0.0.1:5000/
+```
