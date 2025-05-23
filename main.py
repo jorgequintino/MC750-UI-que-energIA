@@ -1,7 +1,7 @@
 import socket
 
 def main():
-	HOST = '0.0.0.0'  # Substitua pelo IP real do Pico W2
+	HOST = '192.168.15.16'  # Substitua pelo IP real do Pico W2
 	PORT = 12345
 
 	# Cria o socket cliente

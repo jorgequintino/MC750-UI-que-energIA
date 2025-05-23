@@ -1,5 +1,11 @@
 from utime import sleep_ms
 from machine import Pin
+import network
+import socket
+import time
+
+SSID = "Cassias"
+PASSWORD = "%clave33422"
 
 class LED(enumerate):
     LED0 = 0
@@ -59,9 +65,35 @@ def LedTurnOff():
     led9.low()
 
 def main():
+    # Wifi Connection
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(SSID, PASSWORD)
+
+    print("Conectando ao Wi-Fi...")
+    while not wlan.isconnected():
+        time.sleep(1)
+    print("Conectado! IP:", wlan.ifconfig()[0])
+
+    # Cria socket servidor
+    HOST = ''  # Escuta em todas as interfaces
+    PORT = 12345
+
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind((HOST, PORT))
+    s.listen(1)
+
+    print(f"Aguardando conexão na porta {PORT}...")
+
+    conn, addr = s.accept()
+    print("Cliente conectado:", addr)
+
     while True:
-        inp = input().split()
-        energy = int(inp[0])
+        data = conn.recv(1024)
+        if not data:
+            break
+        energy = int(data.decode())
+        print("Tamanho recebido:", energy)
 
         if energy == -1:
             LedTurnOff()
