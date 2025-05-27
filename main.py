@@ -1,4 +1,15 @@
 import socket
+from flask import Flask, request, render_template
+
+def gerar_resposta():
+	return
+
+# 5. Prepara os dados para mostrar na interface
+def preparar_resposta_interface(resposta_llm):
+    return render_template(
+        'index.html',
+        resposta=resposta_llm
+    )
 
 def main():
 	HOST = '0.0.0.0'  # Substitua pelo IP real do Pico W2
@@ -22,7 +33,10 @@ def main():
 				s.sendall(str(tamanho).encode())
 	except KeyboardInterrupt:
 		print("Obrigado por usar o UI, que energIA!")
+	
+	
 
+	
 
 if __name__ == '__main__':
 	main()
