@@ -25,7 +25,7 @@ def gerar_resposta(cliente, input):
         model="gpt-4.1-nano",
         input=input
     )
-    return response.output_text
+    return (response.output_text, response.usage.input_tokens, response.usage.output_tokens)
 
 
 

@@ -2,11 +2,14 @@
 user_input -> variavel que recebe a entrada do usuário
 resposta_da_ia -> variavel que recebe a resposta da IA
 consumo_energia -> variavel que recebe o consumo de energia da IA (dá pra tirar)
+
+500 token = 375 words
 '''
 
 
 import customtkinter as ctk
 from openai_utils import gerar_resposta, inicializar_cliente
+from OpenAI.energy_calculation import calculate_cost
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -54,7 +57,8 @@ class ChatApp(ctk.CTk):
         self.display_message(user_input, is_user=True)
 
         # Placeholder da resposta da IA
-        resposta_da_ia = gerar_resposta(self.cliente, user_input)
+        (resposta_da_ia, input_tokens, output_tokens) = gerar_resposta(self.cliente, user_input)
+        print(calculate_cost(input_tokens, output_tokens))      #calculate_cost retorna em Wh
         consumo_energia = 0.4
 
         self.display_message(resposta_da_ia, is_user=False)
