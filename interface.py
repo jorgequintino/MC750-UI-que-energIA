@@ -6,6 +6,7 @@ consumo_energia -> variavel que recebe o consumo de energia da IA (dá pra tirar
 
 
 import customtkinter as ctk
+from openai_utils import gerar_resposta, inicializar_cliente
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -41,6 +42,8 @@ class ChatApp(ctk.CTk):
         self.energy_bar = ctk.CTkProgressBar(self, width=400)
         self.energy_bar.set(0)
         self.energy_bar.pack(pady=5, padx=20, anchor="w")
+        
+        self.cliente = inicializar_cliente()
 
     def send_message(self, event=None):
         user_input = self.entry.get().strip()
@@ -51,7 +54,7 @@ class ChatApp(ctk.CTk):
         self.display_message(user_input, is_user=True)
 
         # Placeholder da resposta da IA
-        resposta_da_ia = "Resposta gerada pela IA aqui (placeholder)"
+        resposta_da_ia = gerar_resposta(self.cliente, user_input)
         consumo_energia = 0.4
 
         self.display_message(resposta_da_ia, is_user=False)
