@@ -18,11 +18,15 @@ Ative a venv:
 ```bash
 source .venv/bin/activate
 ```
-Instale os pacotes necessários para execução do programa:
+Instale os pacotes necessários:
+```bash
+pip install -r requirements.txt
+```
+### Flask
+Execute o servidor Flask:
 ```bash
 python app.py
 ```
-
 Acesse em:
 ```bash
 http://127.0.0.1:5000/
