@@ -24,10 +24,13 @@ Ative a venv:
 ```bash
 source .venv/bin/activate
 ```
+Instale os pacotes necessários:
+```bash
+pip install -r requirements.txt
+```
 
 ### Configurando o Flask
-
-Instale os pacotes necessários para execução do programa:
+Execute o servidor Flask:
 ```bash
 python app.py
 ```

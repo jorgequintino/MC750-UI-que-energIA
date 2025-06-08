@@ -20,6 +20,9 @@ class ChatApp(ctk.CTk):
     def __init__(self):
         super().__init__()
 
+        self.gasto_energetico = ctk.DoubleVar()
+        self.gasto_energetico.set(0)
+
         self.title("UI que Delícia")
         self.geometry("1280x800")
 
@@ -64,7 +67,9 @@ class ChatApp(ctk.CTk):
 
         # Placeholder da resposta da IA
         (resposta_da_ia, input_tokens, output_tokens) = gerar_resposta(self.cliente, user_input)
-        print(calculate_cost(input_tokens, output_tokens))      #calculate_cost retorna em Wh
+        self.gasto_energetico = calculate_cost(input_tokens, output_tokens)
+        print(self.gasto_energetico)      #calculate_cost retorna em Wh
+        
         consumo_energia = 0.4
 
         self.display_message(resposta_da_ia, is_user=False)
