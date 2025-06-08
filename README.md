@@ -20,10 +20,15 @@ source .venv/bin/activate
 ```
 Instale os pacotes necessários para execução do programa:
 ```bash
-pip install -r requirements.txt
+python app.py
 ```
 
-## Configurando a API da OpenAI
+Acesse em:
+```bash
+http://127.0.0.1:5000/
+```
+
+### Configurando a API da OpenAI
 
 1. Crie uma conta em [https://platform.openai.com/signup](https://platform.openai.com/signup).
 2. Após criar sua conta, acesse [https://platform.openai.com/api-keys](https://platform.openai.com/api-keys) e gere uma nova chave de API.
