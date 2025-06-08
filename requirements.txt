@@ -1,0 +1,6 @@
+customtkinter==5.2.2
+dotenv==0.9.9
+numpy==2.3.0
+openai==1.84.0
+pyaudio==0.2.14
+speechrecognition==3.14.3

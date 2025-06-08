@@ -23,6 +23,7 @@ def inicializar_cliente():
 def gerar_resposta(cliente, input):
     response = cliente.responses.create(
         model="gpt-4.1-nano",
+        instructions="Envie suas respostas em texto plano, NÃO utilize negrito e outras decorações de texto",
         input=input
     )
     return (response.output_text, response.usage.input_tokens, response.usage.output_tokens)

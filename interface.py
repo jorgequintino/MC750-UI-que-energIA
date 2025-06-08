@@ -10,6 +10,8 @@ consumo_energia -> variavel que recebe o consumo de energia da IA (dá pra tirar
 import customtkinter as ctk
 from openai_utils import gerar_resposta, inicializar_cliente
 from OpenAI.energy_calculation import calculate_cost
+from audio_rec import interpretador_audio, microfone, transcreve_audio
+import threading
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -37,6 +39,10 @@ class ChatApp(ctk.CTk):
 
         self.send_button = ctk.CTkButton(self.entry_frame, text="Enviar", command=self.send_message, font=ctk.CTkFont(size=self.font_size))
         self.send_button.pack(side="left", pady=10)
+
+        # Botão de voz
+        self.voice_button = ctk.CTkButton(self.entry_frame, width = 220, text="🎤 Falar", command=self.voice_input, font=ctk.CTkFont(size=self.font_size))
+        self.voice_button.pack(side="left", padx=(10, 0), pady=10)
 
         # Indicador visual do consumo de energia
         self.energy_label = ctk.CTkLabel(self, text="Consumo de energia:", font=ctk.CTkFont(size=self.font_size))
@@ -86,6 +92,23 @@ class ChatApp(ctk.CTk):
 
         # Scroll automático após inserção
         self.after(100, lambda: self.chat_frame._parent_canvas.yview_moveto(1.0))
+
+    def voice_input(self):
+        def run_voice():
+            self.entry.delete(0, ctk.END)
+            r = interpretador_audio()
+            with microfone() as source:
+                r.adjust_for_ambient_noise(source)
+                self.voice_button.configure(text="🎤 Fale agora...", state="disabled")
+                print("Fale algo...")
+                audio = r.listen(source)
+                self.voice_button.configure(text="🎤 Processando...", state="disabled")
+            texto = transcreve_audio(r, audio)
+            if texto:
+                self.entry.insert(0, texto)
+                self.send_message()
+            self.voice_button.configure(text="🎤 Falar", state="normal")
+        threading.Thread(target=run_voice, daemon=True).start()
 
 
 if __name__ == "__main__":
