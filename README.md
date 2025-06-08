@@ -1,6 +1,10 @@
 # MC750-UI-que-energIA
 
+O **UI que energIA!** integra uma LLM com uma calculadora de consumo baseada em tamanho dos prompts em respostas para indicar o gasto energético da sua interação. Será que aquele "Bom dia, chat!" vale a pena? Instale e descubra!
 
+A proposta nasceu é um projeto da disciplina [MC750 - Construção de Interfaces Homem-Computador](https://www.dac.unicamp.br/portal/caderno-de-horarios/2025/1/S/G/IC/MC750) da Unicamp, em que o programa é integrado com uma maquete que indica de maneira interativa o gasto acumulado.
+
+**Foto do projeto (pendente).**
 
 ## Autores
 - [Ainaras Marão](https://github.com/MaraoLT)  (182338)
@@ -8,6 +12,8 @@
 - [Jorge Felipe L. Pereira](https://github.com/jorgequintino)  (251771)
 - [Rafael Carro Gaudim](https://github.com/RafaelCarro)  (240879)
 - [Yan Oliveira da Silva](https://github.com/Cl4nyz)  (236363)
+
+## Como instalar
 
 Abra o terminal e navegue até a pasta do seu projeto.
 Crie a venv:
@@ -18,11 +24,13 @@ Ative a venv:
 ```bash
 source .venv/bin/activate
 ```
+
+### Configurando o Flask
+
 Instale os pacotes necessários para execução do programa:
 ```bash
 python app.py
 ```
-
 Acesse em:
 ```bash
 http://127.0.0.1:5000/

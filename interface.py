@@ -102,7 +102,7 @@ class ChatApp(ctk.CTk):
                 self.voice_button.configure(text="🎤 Fale agora...", state="disabled")
                 print("Fale algo...")
                 audio = r.listen(source)
-                self.voice_button.configure(text="🎤 Processando...", state="disabled")
+                self.voice_button.configure(text="⏳ Processando...", state="disabled")
             texto = transcreve_audio(r, audio)
             if texto:
                 self.entry.insert(0, texto)
