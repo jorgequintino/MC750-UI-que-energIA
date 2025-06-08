@@ -22,6 +22,15 @@ Instale os pacotes necessários para execução do programa:
 ```bash
 pip install -r requirements.txt
 ```
+Execute o servidor Flask:
+```bash
+python app.py
+```
+
+Acesse em:
+```bash
+http://127.0.0.1:5000/
+```
 
 ## Configurando a API da OpenAI
 
