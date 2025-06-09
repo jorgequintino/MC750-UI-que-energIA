@@ -87,12 +87,13 @@ def main():
 
     conn, addr = s.accept()
     print("Cliente conectado:", addr)
+    energy = 0
 
     while True:
         data = conn.recv(1024)
         if not data:
             break
-        energy = int(data.decode())
+        energy = energy + int(data.decode())
         print("Tamanho recebido:", energy)
 
         if energy == -1:

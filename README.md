@@ -15,6 +15,12 @@ A proposta nasceu é um projeto da disciplina [MC750 - Construção de Interface
 
 ## Como instalar
 
+Instale as bibliotecas caso necessário:
+```bash
+sudo apt-get update
+sudo apt-get install portaudio19-dev python3-tk
+```
+
 Abra o terminal e navegue até a pasta do seu projeto.
 Crie a venv:
 ```bash
@@ -26,13 +32,18 @@ source .venv/bin/activate
 ```
 Instale os pacotes necessários:
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
+```
+Alternativamente, use:
+```bash
+pip3 install customtkinter python-dotenv numpy openai pyaudio pyttsx3 SpeechRecognition
+
 ```
 
 ### Configurando o Flask
 Execute o servidor Flask:
 ```bash
-python app.py
+python3 app.py
 ```
 Acesse em:
 ```bash

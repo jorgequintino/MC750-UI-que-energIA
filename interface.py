@@ -12,6 +12,7 @@ from openai_utils import gerar_resposta, inicializar_cliente
 from OpenAI.energy_calculation import calculate_cost
 from audio_rec import interpretador_audio, microfone, transcreve_audio
 import threading
+import socket
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -19,6 +20,18 @@ ctk.set_default_color_theme("blue")
 class ChatApp(ctk.CTk):
     def __init__(self):
         super().__init__()
+
+        HOST = '192.168.15.20'  # Substitua pelo IP real do Pico W2
+        PORT = 12345
+
+        self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            self.s.connect((HOST, PORT))
+            print("Conectado ao servidor no IP:", HOST, "e porta:", PORT)
+        except KeyboardInterrupt:
+            print("Obrigado por usar o UI, que energIA!")
+        except Exception:
+            print("Erro ao conectar ao servidor. Verifique o IP e a porta.")
 
         self.gasto_energetico = ctk.DoubleVar()
         self.gasto_energetico.set(0)
@@ -74,6 +87,8 @@ class ChatApp(ctk.CTk):
 
         self.display_message(resposta_da_ia, is_user=False)
         self.energy_bar.set(consumo_energia)
+        numero = int(self.gasto_energetico * 100)  # Multiplica por 10000 para enviar como inteiro
+        self.enviar_numero(self.s, numero)  # Envia o consumo de energia multiplicado por 10000
 
     def display_message(self, text, is_user=False):
         bg_color = "#0078D7" if is_user else "#E0E0E0"
@@ -114,6 +129,13 @@ class ChatApp(ctk.CTk):
                 self.send_message()
             self.voice_button.configure(text="🎤 Falar", state="normal")
         threading.Thread(target=run_voice, daemon=True).start()
+    
+    def enviar_numero(self, sock, numero):
+        """
+        Envia um número inteiro via socket como uma string codificada em bytes.
+        """
+        dados = str(numero).encode()  # Converte o número para string e depois para bytes
+        sock.sendall(dados)
 
 
 if __name__ == "__main__":
