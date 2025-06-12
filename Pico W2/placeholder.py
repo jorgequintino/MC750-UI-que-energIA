@@ -99,36 +99,36 @@ def main():
         if energy == -1:
             LedTurnOff()
             return
-
+        # self.energy_led_limits = {"led": 0.75, "laptop": 1.0, "microwave": 8.33, "house_1min": 19.44, "eletric_car": 250.0, "dishwasher":1200.0, "house_1day": 28000.0}
         LedTurnOff()
-        if energy >= 1:
+        if energy >= 0.75:  #LED 5 min
             LedSelect(LED.LED0)
         sleep_ms(200)
-        if energy >= 2:
+        if energy >= 1.0:   #LAPTOP 5 min
             LedSelect(LED.LED1)
         sleep_ms(200)
-        if energy >= 3:
+        if energy >= 8.33:  #MICROWAVE
             LedSelect(LED.LED2)
         sleep_ms(200)
-        if energy >= 4:
+        if energy >= 19.44: #HOUSE_1MIN
             LedSelect(LED.LED3)
         sleep_ms(200)
-        if energy >= 5:
+        if energy >= 40:    #CELLPONE
             LedSelect(LED.LED4)
         sleep_ms(200)
-        if energy >= 6:
+        if energy >= 80:   #TOASTER
             LedSelect(LED.LED5)
         sleep_ms(200)
-        if energy >= 7:
+        if energy >= 250:   #ELETRIC CAR 1 MILE
             LedSelect(LED.LED6)
         sleep_ms(200)
-        if energy >= 8:
+        if energy >= 750:   #AIR CONDITIONING 1 HOUR
             LedSelect(LED.LED7)
         sleep_ms(200)
-        if energy >= 9:
+        if energy >= 1200:  #DISHWASHER 1 HOUR
             LedSelect(LED.LED8)
         sleep_ms(200)
-        if energy >= 10:
+        if energy >= 28000: #HOUSE 1 HOUR
             LedSelect(LED.LED9)
 
 if __name__ == "__main__":
