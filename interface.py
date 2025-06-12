@@ -22,11 +22,11 @@ class ChatApp(ctk.CTk):
         super().__init__()
         self.CONNECTED = False
 
-        HOST = '192.168.15.20'  # Substitua pelo IP real do Pico W2
+        HOST = '192.168.149.126'  # Substitua pelo IP real do Pico W2
         PORT = 12345
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(5)  # Define um tempo limite de 5 segundos para a conexão
+        self.s.settimeout(1)  # Define um tempo limite de 5 segundos para a conexão
         print("Tentando conectar ao servidor no IP:", HOST, "e porta:", PORT)
         try:
             self.s.connect((HOST, PORT))
@@ -38,7 +38,9 @@ class ChatApp(ctk.CTk):
             print("Erro ao conectar ao servidor. Verifique o IP e a porta.")
 
         self.gasto_energetico = ctk.DoubleVar()
-        self.gasto_energetico.set(0)
+        self.gasto_energetico_total = ctk.DoubleVar()
+        self.gasto_energetico = 0
+        self.gasto_energetico_total = 0
 
         self.title("UI que Delícia")
         self.geometry("1280x800")
@@ -67,12 +69,21 @@ class ChatApp(ctk.CTk):
         # Indicador visual do consumo de energia
         self.energy_label = ctk.CTkLabel(self, text="Consumo de energia:", font=ctk.CTkFont(size=self.font_size))
         self.energy_label.pack(pady=(10, 0), anchor="w", padx=20)
-
-        self.energy_bar = ctk.CTkProgressBar(self, width=400)
+        self.energy_led_limits = {"led": 0.75, "laptop": 1.0, "microwave": 8.33, "cellphone": 40,"house_1min": 19.44, "toaster": 80, "eletric_car": 250.0, "AC": 750, "dishwasher":1200.0, "house_1day": 28000.0}
+        self.energy_bar = ctk.CTkProgressBar(self, width=1250)
         self.energy_bar.set(0)
         self.energy_bar.pack(pady=5, padx=20, anchor="w")
-        
         self.cliente = inicializar_cliente()
+
+        # Linha 2: Gasto energético total + da última mensagem
+        consume_frame = ctk.CTkFrame(self)
+        consume_frame.pack(pady=(10, 0), padx=20, anchor="w")
+
+        self.energy_total_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético Total: {round(self.gasto_energetico_total, 2)}", font=ctk.CTkFont(size=self.font_size))
+        self.energy_total_consume_label.pack(side="left", padx=(0, 30))
+
+        self.energy_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético da Última Mensagem: {round(self.gasto_energetico, 2)}", font=ctk.CTkFont(size=self.font_size))
+        self.energy_consume_label.pack(side="left")
 
     def send_message(self, event=None):
         user_input = self.entry.get().strip()
@@ -85,6 +96,8 @@ class ChatApp(ctk.CTk):
         # Placeholder da resposta da IA
         (resposta_da_ia, input_tokens, output_tokens) = gerar_resposta(self.cliente, user_input)
         self.gasto_energetico = calculate_cost(input_tokens, output_tokens)
+        self.gasto_energetico_total += self.gasto_energetico
+
         print(self.gasto_energetico)      #calculate_cost retorna em Wh
         
         consumo_energia = 0.4
@@ -93,6 +106,8 @@ class ChatApp(ctk.CTk):
         self.energy_bar.set(consumo_energia)
         numero = int(self.gasto_energetico * 100)  # Multiplica por 10000 para enviar como inteiro
         self.enviar_numero(self.s, numero)  # Envia o consumo de energia multiplicado por 10000
+        self.energy_total_consume_label.configure(text=f"Gasto Energético Total: {round(self.gasto_energetico_total, 2)} Wh.")
+        self.energy_consume_label.configure(text=f"Gasto Energético da Última Mensagem: {round(self.gasto_energetico, 2)} Wh.")
 
     def display_message(self, text, is_user=False):
         bg_color = "#0078D7" if is_user else "#E0E0E0"
