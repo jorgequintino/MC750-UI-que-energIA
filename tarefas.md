@@ -24,6 +24,7 @@
 - 2. [ ] Scroll não funciona
 - 3. [ ] Poder dar Ctrl+C copiar uma conversa
 - 4. [ ] Precisa apertar varias vezes o botão para reiniciar a conversa
+- 5. [ ] Arrumar botão do microfone
 
 
 ## Extras
