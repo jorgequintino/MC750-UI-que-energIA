@@ -29,11 +29,11 @@ class ChatApp(ctk.CTk):
 
         self.CONNECTED = False
 
-        HOST = '192.168.15.20'  # Substitua pelo IP real do Pico W2
+        HOST = '192.168.149.126'  # Substitua pelo IP real do Pico W2
         PORT = 12345
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(5)  # Define um tempo limite de 5 segundos para a conexão
+        self.s.settimeout(100)  # Define um tempo limite de 5 segundos para a conexão
         print("Tentando conectar ao servidor no IP:", HOST, "e porta:", PORT)
         try:
             self.s.connect((HOST, PORT))
@@ -81,11 +81,10 @@ class ChatApp(ctk.CTk):
         # Indicador visual do consumo de energia
         self.energy_label = ctk.CTkLabel(self, text="Consumo de energia:", font=ctk.CTkFont(size=self.font_size))
         self.energy_label.pack(pady=(10, 0), anchor="w", padx=20)
-
+        self.energy_led_limits = {"led": 0.75, "laptop": 1.0, "microwave": 8.33, "cellphone": 40,"house_1min": 19.44, "toaster": 80, "eletric_car": 250.0, "AC": 750, "dishwasher":1200.0, "house_1day": 28000.0}
         self.energy_bar = ctk.CTkProgressBar(self, width=400)
         self.energy_bar.set(0)
         self.energy_bar.pack(pady=5, padx=20, anchor="w")
-        
         self.cliente = inicializar_cliente()
 
     def send_message(self, event=None):
