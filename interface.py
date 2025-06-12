@@ -20,6 +20,7 @@ ctk.set_default_color_theme("blue")
 class ChatApp(ctk.CTk):
     def __init__(self):
         super().__init__()
+        self.CONNECTED = False
 
         HOST = '192.168.15.20'  # Substitua pelo IP real do Pico W2
         PORT = 12345
@@ -29,6 +30,7 @@ class ChatApp(ctk.CTk):
         print("Tentando conectar ao servidor no IP:", HOST, "e porta:", PORT)
         try:
             self.s.connect((HOST, PORT))
+            self.CONNECTED = True
             print("Conectado ao servidor no IP:", HOST, "e porta:", PORT)
         except KeyboardInterrupt:
             print("Obrigado por usar o UI, que energIA!")
@@ -136,6 +138,9 @@ class ChatApp(ctk.CTk):
         """
         Envia um número inteiro via socket como uma string codificada em bytes.
         """
+        if self.CONNECTED == False:
+            print("Não há dispositivo conectado.")
+            return
         dados = str(numero).encode()  # Converte o número para string e depois para bytes
         sock.sendall(dados)
 
