@@ -95,16 +95,22 @@ def main():
 
     conn, addr = s.accept()
     print("Cliente conectado:", addr)
-    energy = 0
+    energy = float(0)
     conn.setblocking(False)  # Configura o socket para não bloquear
-    last_energy = 0
+    last_energy = float(0)
 
     while True:
+        if not wlan.isconnected():
+            print("Wi-Fi desconectado. Encerrando o programa.")
+            conn.close()
+            s.close()
+            break
+
         # Tenta receber dados, mas não trava se não houver nada
         try:
             data = conn.recv(1024)
             if data:
-                energy = energy + int(data.decode())
+                energy = energy + float(data.decode())
                 print("Tamanho recebido:", energy)
         except OSError:
             pass  # Sem dados, segue o loop normalmente
@@ -112,41 +118,41 @@ def main():
         button_state = reset.value()
         if button_state == 1 and last_button_state == 0:
             print("Botão pressionado, resetando energia.")
-            energy = -1  # Reseta a energia se o botão for pressionado
+            energy = -1.0  # Reseta a energia se o botão for pressionado
             last_button_state = 0
         last_button_state = button_state
 
-        if energy == -1:
+        if energy == -1.0:
             LedTurnOff()
         if last_energy != energy:
-            if energy >= 1:
+            if energy >= 0.75:
                 LedSelect(LED.LED0)
                 sleep_ms(200)
-            if energy >= 2:
+            if energy >= 1.0:
                 LedSelect(LED.LED1)
                 sleep_ms(200)
-            if energy >= 3:
+            if energy >= 8.33:
                 LedSelect(LED.LED2)
                 sleep_ms(200)
-            if energy >= 4:
+            if energy >= 19.44:
                 LedSelect(LED.LED3)
                 sleep_ms(200)
-            if energy >= 5:
+            if energy >= 80.0:
                 LedSelect(LED.LED4)
                 sleep_ms(200)
-            if energy >= 6:
+            if energy >= 250.0:
                 LedSelect(LED.LED5)
                 sleep_ms(200)
-            if energy >= 7:
+            if energy >= 750.0:
                 LedSelect(LED.LED6)
                 sleep_ms(200)
-            if energy >= 8:
+            if energy >= 1200.0:
                 LedSelect(LED.LED7)
                 sleep_ms(200)
-            if energy >= 9:
+            if energy >= 2800.0:
                 LedSelect(LED.LED8)
                 sleep_ms(200)
-            if energy >= 10:
+            if energy >= 10000.0:
                 LedSelect(LED.LED9)
         last_energy = energy
 
