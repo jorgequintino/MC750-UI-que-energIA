@@ -40,16 +40,6 @@ pip3 install customtkinter python-dotenv numpy openai pyaudio pyttsx3 SpeechReco
 
 ```
 
-### Configurando o Flask
-Execute o servidor Flask:
-```bash
-python3 app.py
-```
-Acesse em:
-```bash
-http://127.0.0.1:5000/
-```
-
 ### Configurando a API da OpenAI
 
 1. Crie uma conta em [https://platform.openai.com/signup](https://platform.openai.com/signup).
@@ -65,3 +55,20 @@ http://127.0.0.1:5000/
 5. Salve o arquivo `.env`. O programa irá carregar automaticamente sua chave ao rodar.
 
 Pronto! Agora é só executar o programa `interface.py`!
+
+### Configurando o PicoW2
+
+1. Instale a extensão Raspberry Pi Pico
+   1. Instale-a pela aba de extensões ou faça:
+   ```bash
+   ext install raspberry-pi.raspberry-pi-pico
+   ```
+   2. Alternativamente, use outa IDE com suporte a MicroPython da sua escolha
+2. Flashe o firmware do Raspberry Pico W2:
+   1. Aperte o botão de reset no Pico W2 e o mantenha pressionado
+   2. Conecte-o ao computador via USB
+   3. Solte o botão para habilitar o modo flash de firmware
+   4. Abra o armazenamento interno do W2 e coloque o arquivo 'mp_firmware_unofficial_latest.uf2'
+   5. O pico ira fechar a interface com o armazeno interno e ira flashar o firmware
+3. Abra a pasta Pico W2 para rodar os codigos em MicroPython
+4. Rode os arquivos necessários clicando em Run no menu inferior
