@@ -26,7 +26,7 @@ class ChatApp(ctk.CTk):
         PORT = 12345
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(1)  # Define um tempo limite de 5 segundos para a conexão
+        self.s.settimeout(10)  # Define um tempo limite de 5 segundos para a conexão
         print("Tentando conectar ao servidor no IP:", HOST, "e porta:", PORT)
         try:
             self.s.connect((HOST, PORT))
