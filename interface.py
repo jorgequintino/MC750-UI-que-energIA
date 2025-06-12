@@ -13,7 +13,6 @@ from OpenAI.energy_calculation import calculate_cost
 from audio_rec import interpretador_audio, microfone, transcreve_audio
 import threading
 import socket
-import time
 import itertools
 
 ctk.set_appearance_mode("System")
@@ -29,11 +28,11 @@ class ChatApp(ctk.CTk):
 
         self.CONNECTED = False
 
-        HOST = '192.168.149.126'  # Substitua pelo IP real do Pico W2
+        HOST = '192.168.15.20'  # Substitua pelo IP real do Pico W2
         PORT = 12345
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(100)  # Define um tempo limite de 5 segundos para a conexão
+        self.s.settimeout(5)  # Define um tempo limite de 5 segundos para a conexão
         print("Tentando conectar ao servidor no IP:", HOST, "e porta:", PORT)
         try:
             self.s.connect((HOST, PORT))
@@ -44,9 +43,20 @@ class ChatApp(ctk.CTk):
         except Exception:
             print("Erro ao conectar ao servidor. Verifique o IP e a porta.")
 
-        self.gasto_energetico = ctk.DoubleVar()
-        self.gasto_energetico.set(0)
+        self.energy_led_limits = {"Acenda um LED por 5min: ": 0.75, 
+                                  "Use um Notebook por 5min: ": 1.0, 
+                                  "Use um Microondas por 30s: ": 8.33, 
+                                  "Ligue uma Casa por 1min: ": 19.44, 
+                                  "Carregue um Celular até 100%: ": 40, 
+                                  "Use uma Torradeira por 3min: ": 80, 
+                                  "Use um Carro Elétrico por 1.6km: ": 250.0,
+                                  "Use um Ar Condicionado por 1h: ": 750, 
+                                  "Use uma Lava-louças: ": 1200.0, 
+                                  "Ligue uma casa por 1 dia: ": 28000.0,
+                                  "Gaste toda a energia do mundo: ": 1000000.0}
 
+
+        self.cliente = inicializar_cliente()
 
         # Área de mensagens rolável (estilo WhatsApp)
         self.chat_frame = ctk.CTkScrollableFrame(self, width=1200, height=500)
@@ -78,22 +88,37 @@ class ChatApp(ctk.CTk):
         )
         self.people_selector.pack(side="left", padx=(10, 10), pady=10)
 
-        # Indicador visual do consumo de energia
-        self.energy_label = ctk.CTkLabel(self, text="Consumo de energia:", font=ctk.CTkFont(size=self.font_size))
-        self.energy_label.pack(pady=(10, 0), anchor="w", padx=20)
-        self.energy_led_limits = {"led": 0.75, "laptop": 1.0, "microwave": 8.33, "cellphone": 40,"house_1min": 19.44, "toaster": 80, "eletric_car": 250.0, "AC": 750, "dishwasher":1200.0, "house_1day": 28000.0}
+        # Indicador visual do consumo de energia (barra)
+        self.energy_stage = 0  # Índice do estágio atual
+        self.consumo_energia = 0  # Consumo acumulado
+        self.energy_label = ctk.CTkLabel(self, text=f"{list(self.energy_led_limits.keys())[self.energy_stage]}", font=ctk.CTkFont(size=self.font_size))
         self.energy_bar = ctk.CTkProgressBar(self, width=400)
         self.energy_bar.set(0)
         self.energy_bar.pack(pady=5, padx=20, anchor="w")
-        self.cliente = inicializar_cliente()
+        self.energy_label.pack(pady=(10, 0), anchor="w", padx=20)
+
+
+    def update_energy_bar(self, gasto):
+        self.consumo_energia += gasto
+        chaves = list(self.energy_led_limits.keys())
+        limite = list(self.energy_led_limits.values())[self.energy_stage]
+        progresso = min(self.consumo_energia / limite, 1.0)
+        self.energy_bar.set(progresso)
+        # Atualiza o texto do label conforme o estágio
+        self.energy_label.configure(text=f"{chaves[self.energy_stage]}")
+
+        if self.consumo_energia >= limite:
+            self.consumo_energia = 0
+            self.energy_stage = min(self.energy_stage + 1, len(self.energy_led_limits) - 1)
+            self.energy_bar.set(0)
+            # Atualiza o texto do label para o próximo estágio
+            self.energy_label.configure(text=f"{chaves[self.energy_stage]}")
 
     def send_message(self, event=None):
         user_input = self.entry.get().strip()
         if not user_input:
             return
-
-        num_pessoas = self.people_var.get()
-        prompt = f"{user_input}\n\nConsidere que {num_pessoas} pessoas estão fazendo essa pergunta."
+        prompt = user_input
 
         self.entry.delete(0, ctk.END)
         self.display_message(user_input, is_user=True)
@@ -106,9 +131,8 @@ class ChatApp(ctk.CTk):
             text_color="green"
         )
         loading_label.pack(anchor="w", pady=5, padx=10)
-        self.after(100, lambda: self.chat_frame._parent_canvas.yview_moveto(1.0))
+        self.after(100, self.scroll_to_bottom)
 
-        # Animação da bolinha (piscando)
         def animate_loading():
             colors = itertools.cycle(["green", "yellow", "red", "yellow"])
             def pulse():
@@ -119,12 +143,11 @@ class ChatApp(ctk.CTk):
 
         def process():
             resposta_da_ia, input_tokens, output_tokens = gerar_resposta(self.cliente, prompt)
-            self.gasto_energetico = calculate_cost(input_tokens, output_tokens) * int(num_pessoas)
-            consumo_energia += self.gasto_energetico.get()
+            gasto = calculate_cost(input_tokens, output_tokens) * int(self.people_var.get())
             loading_label.destroy()
             self.display_message(resposta_da_ia, is_user=False)
-            self.energy_bar.set(consumo_energia)
-            numero = int(self.gasto_energetico * 100)
+            self.update_energy_bar(gasto)
+            numero = int(gasto)
             self.enviar_numero(self.s, numero)
 
         threading.Thread(target=process, daemon=True).start()
@@ -154,7 +177,7 @@ class ChatApp(ctk.CTk):
 
     def scroll_to_bottom(self):
         try:
-            self.chat_frame.canvas.yview_moveto(1.0)
+            self.chat_frame._parent_canvas.yview_moveto(1.0)
         except Exception:
             pass
 
