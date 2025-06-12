@@ -173,7 +173,7 @@ class ChatApp(ctk.CTk):
             loading_label.destroy()
             self.display_message(resposta_da_ia, is_user=False)
             self.update_energy_bar(self.gasto_energetico)
-            self.enviar_numero(self.s, int(self.gasto_energetico))
+            self.enviar_numero(self.s, float(self.gasto_energetico))
 
         threading.Thread(target=process, daemon=True).start()
 

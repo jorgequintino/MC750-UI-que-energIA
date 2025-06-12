@@ -2,23 +2,29 @@
 
 ## Interface
 - 1. [X] Indicador de processamento da resposta
-- 2. [ ] Valor numerico na interface mostrando o consumo de energia da ultima pergunta
-- 3. [ ] Valor de gasto total na interface
+- 2. [X] Valor numerico na interface mostrando o consumo de energia da ultima pergunta
+- 3. [X] Valor de gasto total na interface
 - 4. [ ] Botão de reiniciar conversa na interface + logica
-- 5. [ ] Barra de progresso carregar de acordo com o *Vetor dos LEDs*
-- 6. [ ] Poder dar Ctrl+C copiar uma conversa
+- 5. [X] Barra de progresso carregar de acordo com o *Vetor dos LEDs*
 
 ## Circuito
-- 1. [ ] Botão de reiniciar conversa no circuito
+- 1. [X] Botão de reiniciar conversa no circuito
 
 ## Teorico
-- 1. [ ] Calcular valores para ascender LEDs
-- 2. [ ] *Vetor dos LEDs* com valores para ascender cada LED v = [5, 10, 100, 200, 500, 1000] -> para o 1o LED precisa de 5W, 2o, 10W, etc.
-- 3. [ ] O bot não guarda informações das perguntas anteriores, na prática fica estranho
+- 1. [X] Calcular valores para ascender LEDs
+- 2. [X] *Vetor dos LEDs* com valores para ascender cada LED v = [5, 10, 100, 200, 500, 1000] -> para o 1o LED precisa de 5W, 2o, 10W, etc.
+- 3. [X] O bot não guarda informações das perguntas anteriores, na prática fica estranho
 
 ## Outros
-- 1. [ ] Arrumar o texto do README.md
+- 1. [X] Arrumar o texto do README.md
 - 2. [ ] Testar o codigo com o Tiago ZapZap
+
+## Bugs
+- 1. [ ] A barra de progresso, ao passar para o proximo estágio nao carrega, fica presa no inicio
+- 2. [ ] Scroll não funciona
+- 3. [ ] Poder dar Ctrl+C copiar uma conversa
+- 4. [ ] Precisa apertar varias vezes o botão para reiniciar a conversa
+
 
 ## Extras
 - 1. [ ] Fazer a maquete fazer som das coisas: carro ligando, lava-roupas, pessoa falando, etc.
