@@ -13,6 +13,8 @@ from OpenAI.energy_calculation import calculate_cost
 from audio_rec import interpretador_audio, microfone, transcreve_audio
 import threading
 import socket
+import time
+import itertools
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -20,6 +22,11 @@ ctk.set_default_color_theme("blue")
 class ChatApp(ctk.CTk):
     def __init__(self):
         super().__init__()
+        self.title("UI que Delícia")
+        self.geometry("1280x800")
+
+        self.font_size = 22
+
         self.CONNECTED = False
 
         HOST = '192.168.15.20'  # Substitua pelo IP real do Pico W2
@@ -40,10 +47,6 @@ class ChatApp(ctk.CTk):
         self.gasto_energetico = ctk.DoubleVar()
         self.gasto_energetico.set(0)
 
-        self.title("UI que Delícia")
-        self.geometry("1280x800")
-
-        self.font_size = 22
 
         # Área de mensagens rolável (estilo WhatsApp)
         self.chat_frame = ctk.CTkScrollableFrame(self, width=1200, height=500)
@@ -61,8 +64,19 @@ class ChatApp(ctk.CTk):
         self.send_button.pack(side="left", pady=10)
 
         # Botão de voz
-        self.voice_button = ctk.CTkButton(self.entry_frame, width = 220, text="🎤 Falar", command=self.voice_input, font=ctk.CTkFont(size=self.font_size))
+        self.voice_button = ctk.CTkButton(self.entry_frame, width = 150, text="🎤 Falar", command=self.voice_input, font=ctk.CTkFont(size=self.font_size))
         self.voice_button.pack(side="left", padx=(10, 0), pady=10)
+
+        # Adiciona o selecionador de quantidade de pessoas
+        self.people_var = ctk.StringVar(value="1")
+        self.people_selector = ctk.CTkOptionMenu(
+            self.entry_frame,
+            values=["1", "10", "100", "1000"],
+            variable=self.people_var,
+            width=100,
+            font=ctk.CTkFont(size=self.font_size)
+        )
+        self.people_selector.pack(side="left", padx=(10, 10), pady=10)
 
         # Indicador visual do consumo de energia
         self.energy_label = ctk.CTkLabel(self, text="Consumo de energia:", font=ctk.CTkFont(size=self.font_size))
@@ -79,20 +93,42 @@ class ChatApp(ctk.CTk):
         if not user_input:
             return
 
+        num_pessoas = self.people_var.get()
+        prompt = f"{user_input}\n\nConsidere que {num_pessoas} pessoas estão fazendo essa pergunta."
+
         self.entry.delete(0, ctk.END)
         self.display_message(user_input, is_user=True)
 
-        # Placeholder da resposta da IA
-        (resposta_da_ia, input_tokens, output_tokens) = gerar_resposta(self.cliente, user_input)
-        self.gasto_energetico = calculate_cost(input_tokens, output_tokens)
-        print(self.gasto_energetico)      #calculate_cost retorna em Wh
-        
-        consumo_energia = 0.4
+        # Adiciona bolinha animada de carregando
+        loading_label = ctk.CTkLabel(
+            self.chat_frame,
+            text="●",
+            font=ctk.CTkFont(size=self.font_size + 10),
+            text_color="green"
+        )
+        loading_label.pack(anchor="w", pady=5, padx=10)
+        self.after(100, lambda: self.chat_frame._parent_canvas.yview_moveto(1.0))
 
-        self.display_message(resposta_da_ia, is_user=False)
-        self.energy_bar.set(consumo_energia)
-        numero = int(self.gasto_energetico * 100)  # Multiplica por 10000 para enviar como inteiro
-        self.enviar_numero(self.s, numero)  # Envia o consumo de energia multiplicado por 10000
+        # Animação da bolinha (piscando)
+        def animate_loading():
+            colors = itertools.cycle(["green", "yellow", "red", "yellow"])
+            def pulse():
+                loading_label.configure(text_color=next(colors))
+                loading_label.after(400, pulse)
+            pulse()
+        animate_loading()
+
+        def process():
+            resposta_da_ia, input_tokens, output_tokens = gerar_resposta(self.cliente, prompt)
+            self.gasto_energetico = calculate_cost(input_tokens, output_tokens) * int(num_pessoas)
+            consumo_energia += self.gasto_energetico.get()
+            loading_label.destroy()
+            self.display_message(resposta_da_ia, is_user=False)
+            self.energy_bar.set(consumo_energia)
+            numero = int(self.gasto_energetico * 100)
+            self.enviar_numero(self.s, numero)
+
+        threading.Thread(target=process, daemon=True).start()
 
     def display_message(self, text, is_user=False):
         bg_color = "#0078D7" if is_user else "#E0E0E0"
@@ -115,7 +151,13 @@ class ChatApp(ctk.CTk):
         msg_label.pack(anchor=anchor, pady=5, padx=10)
 
         # Scroll automático após inserção
-        self.after(100, lambda: self.chat_frame._parent_canvas.yview_moveto(1.0))
+        self.after(100, self.scroll_to_bottom)
+
+    def scroll_to_bottom(self):
+        try:
+            self.chat_frame.canvas.yview_moveto(1.0)
+        except Exception:
+            pass
 
     def voice_input(self):
         def run_voice():
