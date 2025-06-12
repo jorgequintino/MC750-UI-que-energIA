@@ -23,6 +23,7 @@ led6 = Pin(6, Pin.OUT)
 led7 = Pin(7, Pin.OUT)
 led8  = Pin(8, Pin.OUT)
 led9  = Pin(9, Pin.OUT)
+led = Pin("LED", Pin.OUT)
 
 def LedSelect(_LED):
     if _LED == LED.LED0:
@@ -63,6 +64,7 @@ def main():
 
     i = 0
     print("LED Testing Started...")
+    led.on()  # Turn on the built-in LED
     while i < 10:
         LedSelect(i)
         sleep_ms(1000)

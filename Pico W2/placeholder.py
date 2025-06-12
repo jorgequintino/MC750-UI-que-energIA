@@ -4,8 +4,8 @@ import network
 import socket
 import time
 
-SSID = "Cassias"
-PASSWORD = "%clave33422"
+SSID = "Doug"
+PASSWORD = "dw598103"
 
 class LED(enumerate):
     LED0 = 0
@@ -29,28 +29,30 @@ led6 = Pin(6, Pin.OUT)
 led7 = Pin(7, Pin.OUT)
 led8  = Pin(8, Pin.OUT)
 led9  = Pin(9, Pin.OUT)
+reset = Pin(10, Pin.IN, Pin.PULL_DOWN)
+led_onboard = Pin("LED", Pin.OUT)
 
 def LedSelect(_LED):
     if _LED == LED.LED0:
-        led0.toggle()
+        led0.on()
     if _LED == LED.LED1:
-        led1.toggle()
+        led1.on()
     elif _LED == LED.LED2:
-        led2.toggle()
+        led2.on()
     elif _LED == LED.LED3:
-        led3.toggle()
+        led3.on()
     elif _LED == LED.LED4:
-        led4.toggle()
+        led4.on()
     elif _LED == LED.LED5:
-        led5.toggle()
+        led5.on()
     elif _LED == LED.LED6:
-        led6.toggle()
+        led6.on()
     elif _LED == LED.LED7:
-        led7.toggle()
+        led7.on()
     elif _LED == LED.LED8:
-        led8.toggle()
+        led8.on()
     elif _LED == LED.LED9:
-        led9.toggle()
+        led9.on()
 
 def LedTurnOff():
     led0.low()
@@ -65,6 +67,12 @@ def LedTurnOff():
     led9.low()
 
 def main():
+    # Setup inicial
+    LedTurnOff()  # Desliga todos os LEDs inicialmente
+    led_onboard.on()  # Liga o LED onboard para indicar que o servidor está ativo
+
+    last_button_state = reset.value()  # Estado inicial do botão
+
     # Wifi Connection
     wlan = network.WLAN(network.STA_IF)
     wlan.active(True)
@@ -88,48 +96,59 @@ def main():
     conn, addr = s.accept()
     print("Cliente conectado:", addr)
     energy = 0
+    conn.setblocking(False)  # Configura o socket para não bloquear
+    last_energy = 0
 
     while True:
-        data = conn.recv(1024)
-        if not data:
-            break
-        energy = energy + int(data.decode())
-        print("Tamanho recebido:", energy)
+        # Tenta receber dados, mas não trava se não houver nada
+        try:
+            data = conn.recv(1024)
+            if data:
+                energy = energy + int(data.decode())
+                print("Tamanho recebido:", energy)
+        except OSError:
+            pass  # Sem dados, segue o loop normalmente
+
+        button_state = reset.value()
+        if button_state == 1 and last_button_state == 0:
+            print("Botão pressionado, resetando energia.")
+            energy = -1  # Reseta a energia se o botão for pressionado
+            last_button_state = 0
+        last_button_state = button_state
 
         if energy == -1:
             LedTurnOff()
-            return
-
-        LedTurnOff()
-        if energy >= 1:
-            LedSelect(LED.LED0)
-        sleep_ms(200)
-        if energy >= 2:
-            LedSelect(LED.LED1)
-        sleep_ms(200)
-        if energy >= 3:
-            LedSelect(LED.LED2)
-        sleep_ms(200)
-        if energy >= 4:
-            LedSelect(LED.LED3)
-        sleep_ms(200)
-        if energy >= 5:
-            LedSelect(LED.LED4)
-        sleep_ms(200)
-        if energy >= 6:
-            LedSelect(LED.LED5)
-        sleep_ms(200)
-        if energy >= 7:
-            LedSelect(LED.LED6)
-        sleep_ms(200)
-        if energy >= 8:
-            LedSelect(LED.LED7)
-        sleep_ms(200)
-        if energy >= 9:
-            LedSelect(LED.LED8)
-        sleep_ms(200)
-        if energy >= 10:
-            LedSelect(LED.LED9)
+        if last_energy != energy:
+            if energy >= 1:
+                LedSelect(LED.LED0)
+                sleep_ms(200)
+            if energy >= 2:
+                LedSelect(LED.LED1)
+                sleep_ms(200)
+            if energy >= 3:
+                LedSelect(LED.LED2)
+                sleep_ms(200)
+            if energy >= 4:
+                LedSelect(LED.LED3)
+                sleep_ms(200)
+            if energy >= 5:
+                LedSelect(LED.LED4)
+                sleep_ms(200)
+            if energy >= 6:
+                LedSelect(LED.LED5)
+                sleep_ms(200)
+            if energy >= 7:
+                LedSelect(LED.LED6)
+                sleep_ms(200)
+            if energy >= 8:
+                LedSelect(LED.LED7)
+                sleep_ms(200)
+            if energy >= 9:
+                LedSelect(LED.LED8)
+                sleep_ms(200)
+            if energy >= 10:
+                LedSelect(LED.LED9)
+        last_energy = energy
 
 if __name__ == "__main__":
     main()
