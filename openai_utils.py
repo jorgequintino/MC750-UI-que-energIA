@@ -28,6 +28,15 @@ def gerar_resposta(cliente, input):
     )
     return (response.output_text, response.usage.input_tokens, response.usage.output_tokens)
 
+def gerar_resposta_com_historico(cliente, messages):
+    response = cliente.chat.completions.create(
+        model="gpt-4.1-nano",  # ou "gpt-4", "gpt-3.5-turbo"
+        messages=messages
+    )
+    resposta_assistente = response.choices[0].message.content
+    prompt_tokens = response.usage.prompt_tokens
+    completion_tokens = response.usage.completion_tokens
+    return resposta_assistente, prompt_tokens, completion_tokens
 
 
 def main():

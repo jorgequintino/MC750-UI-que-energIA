@@ -1,19 +1,21 @@
 '''
 user_input -> variavel que recebe a entrada do usuário
 resposta_da_ia -> variavel que recebe a resposta da IA
-consumo_energia -> variavel que recebe o consumo de energia da IA (dá pra tirar)
 
 500 token = 375 words
 '''
 
 
 import customtkinter as ctk
-from openai_utils import gerar_resposta, inicializar_cliente
+from openai_utils import gerar_resposta, inicializar_cliente, gerar_resposta_com_historico
 from OpenAI.energy_calculation import calculate_cost
 from audio_rec import interpretador_audio, microfone, transcreve_audio
 import threading
 import socket
 import itertools
+
+DEFAULT_MESSAGE_ARRAY = [{"role": "system", "content": "Envie suas respostas em texto plano, NÃO utilize negrito e outras decorações de texto"}]
+RESET = -1
 
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
@@ -63,7 +65,9 @@ class ChatApp(ctk.CTk):
                                   "Use uma Lava-louças: ": 1200.0, 
                                   "Ligue uma casa por 1 dia: ": 28000.0,
                                   "Gaste toda a energia do mundo: ": 1000000.0}
-
+        
+        self.labels = list(self.energy_led_limits.keys())
+        self.milestones = list(self.energy_led_limits.values())
 
         self.cliente = inicializar_cliente()
 
@@ -97,10 +101,17 @@ class ChatApp(ctk.CTk):
         )
         self.people_selector.pack(side="left", padx=(10, 10), pady=10)
 
+        # Botão de reiniciar
+        self.reset_button = ctk.CTkButton(
+            self.entry_frame,
+            text="Reiniciar",
+            command=self.reset,
+            font=ctk.CTkFont(size=self.font_size)
+        )
+        self.reset_button.pack(side="left", padx=(10, 0), pady=10)
+
         # Indicador visual do consumo de energia (barra)
-        self.energy_stage = 0  # Índice do estágio atual
-        self.consumo_energia = 0  # Consumo acumulado
-        self.energy_label = ctk.CTkLabel(self, text=f"{list(self.energy_led_limits.keys())[self.energy_stage]}", font=ctk.CTkFont(size=self.font_size))
+        self.energy_label = ctk.CTkLabel(self, text=f"{list(self.energy_led_limits.keys())[0]}", font=ctk.CTkFont(size=self.font_size))
 
         self.energy_bar = ctk.CTkProgressBar(self, width=1250)
         self.energy_bar.set(0)
@@ -117,22 +128,20 @@ class ChatApp(ctk.CTk):
         self.energy_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético da Última Mensagem: {round(self.gasto_energetico, 2)}", font=ctk.CTkFont(size=self.font_size))
         self.energy_consume_label.pack(side="left")
 
+        self.messages = DEFAULT_MESSAGE_ARRAY
+
 
     def update_energy_bar(self, gasto):
-        self.consumo_energia += gasto
-        chaves = list(self.energy_led_limits.keys())
-        limite = list(self.energy_led_limits.values())[self.energy_stage]
-        progresso = min(self.consumo_energia / limite, 1.0)
-        self.energy_bar.set(progresso)
-        # Atualiza o texto do label conforme o estágio
-        self.energy_label.configure(text=f"{chaves[self.energy_stage]}")
-
-        if self.consumo_energia >= limite:
-            self.consumo_energia = 0
-            self.energy_stage = min(self.energy_stage + 1, len(self.energy_led_limits) - 1)
-            self.energy_bar.set(0)
-            # Atualiza o texto do label para o próximo estágio
-            self.energy_label.configure(text=f"{chaves[self.energy_stage]}")
+        index = self.calcular_estagio()
+        self.energy_label.configure(text=f"{self.labels[index]}")
+        if index < len(self.milestones):
+            inicio = (0 if index == 0 else self.milestones[index - 1])
+            fim = self.milestones[index]
+            atual = (self.gasto_energetico_total if index == 0 else self.gasto_energetico_total - self.milestones[index-1])
+            progresso = (atual / (fim - inicio))
+            self.energy_bar.set(progresso)
+        else:
+            self.energy_bar.set(100)
 
     def send_message(self, event=None):
         user_input = self.entry.get().strip()
@@ -161,10 +170,14 @@ class ChatApp(ctk.CTk):
             pulse()
         animate_loading()
 
-
-
         def process():
-            resposta_da_ia, input_tokens, output_tokens = gerar_resposta(self.cliente, prompt)
+            # resposta_da_ia, input_tokens, output_tokens = gerar_resposta(self.cliente, prompt)
+            self.messages.append({'role': 'user',
+                              'content': prompt})
+            (resposta_da_ia, input_tokens, output_tokens) = gerar_resposta_com_historico(self.cliente, self.messages)
+            self.messages.append({"role": "assistant",
+                                  "content": resposta_da_ia})
+
             self.gasto_energetico = calculate_cost(input_tokens, output_tokens) * int(self.people_var.get())
             self.gasto_energetico_total += self.gasto_energetico
             self.energy_total_consume_label.configure(text=f"Gasto Energético Total: {round(self.gasto_energetico_total, 2)} Wh.")
@@ -222,6 +235,31 @@ class ChatApp(ctk.CTk):
                 self.send_message()
             self.voice_button.configure(text="🎤 Falar", state="normal")
         threading.Thread(target=run_voice, daemon=True).start()
+
+
+    def calcular_estagio(self):
+        '''
+        Retorna o índice do estágio atual do consumo energético.
+        '''
+        for i in range(len(self.milestones)):
+            if self.milestones[i] >= self.gasto_energetico_total:
+                break
+        return i
+            
+
+    def reset(self):
+        self.messages = DEFAULT_MESSAGE_ARRAY.copy()
+        self.enviar_numero(self.s, RESET)
+
+        self.gasto_energetico = 0
+        self.gasto_energetico_total = 0
+        self.energy_total_consume_label.configure(text=f"Gasto Energético Total: {round(self.gasto_energetico_total, 2)} Wh.")
+        self.energy_consume_label.configure(text=f"Gasto Energético da Última Mensagem: {round(self.gasto_energetico, 2)} Wh.")
+
+        self.update_energy_bar(self.gasto_energetico)
+        self.enviar_numero(self.s, float(self.gasto_energetico))
+
+        self.messages = DEFAULT_MESSAGE_ARRAY
     
     def enviar_numero(self, sock, numero):
         """
