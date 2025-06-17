@@ -95,9 +95,10 @@ def main():
 
     conn, addr = s.accept()
     print("Cliente conectado:", addr)
+    energy_total = float(0)
     energy = float(0)
     conn.setblocking(False)  # Configura o socket para não bloquear
-    last_energy = float(0)
+    last_energy_total = float(0)
 
     while True:
         if not wlan.isconnected():
@@ -110,51 +111,53 @@ def main():
         try:
             data = conn.recv(1024)
             if data:
-                energy = energy + float(data.decode())
-                print("Tamanho recebido:", energy)
+                energy = float(data.decode())
+                if energy < 0.0:
+                    energy_total = 0.0
+                    LedTurnOff()
+                energy_total = energy_total + float(data.decode())
+                print("Tamanho recebido:", energy_total)
         except OSError:
             pass  # Sem dados, segue o loop normalmente
 
         button_state = reset.value()
         if button_state == 1 and last_button_state == 0:
             print("Botão pressionado, resetando energia.")
-            energy = -1.0  # Reseta a energia se o botão for pressionado
+            energy_total = -1.0  # Reseta a energia se o botão for pressionado
             last_button_state = 0
         last_button_state = button_state
 
-        if energy == -1.0:
-            LedTurnOff()
-        if last_energy != energy:
-            if energy >= 0.75:
+        if last_energy_total != energy_total:
+            if energy_total >= 0.75:
                 LedSelect(LED.LED0)
                 sleep_ms(200)
-            if energy >= 1.0:
+            if energy_total >= 1.0:
                 LedSelect(LED.LED1)
                 sleep_ms(200)
-            if energy >= 8.33:
+            if energy_total >= 8.33:
                 LedSelect(LED.LED2)
                 sleep_ms(200)
-            if energy >= 19.44:
+            if energy_total >= 19.44:
                 LedSelect(LED.LED3)
                 sleep_ms(200)
-            if energy >= 80.0:
+            if energy_total >= 80.0:
                 LedSelect(LED.LED4)
                 sleep_ms(200)
-            if energy >= 250.0:
+            if energy_total >= 250.0:
                 LedSelect(LED.LED5)
                 sleep_ms(200)
-            if energy >= 750.0:
+            if energy_total >= 750.0:
                 LedSelect(LED.LED6)
                 sleep_ms(200)
-            if energy >= 1200.0:
+            if energy_total >= 1200.0:
                 LedSelect(LED.LED7)
                 sleep_ms(200)
-            if energy >= 2800.0:
+            if energy_total >= 2800.0:
                 LedSelect(LED.LED8)
                 sleep_ms(200)
-            if energy >= 10000.0:
+            if energy_total >= 10000.0:
                 LedSelect(LED.LED9)
-        last_energy = energy
+        last_energy_total = energy_total
 
 if __name__ == "__main__":
     main()
