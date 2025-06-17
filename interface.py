@@ -122,26 +122,67 @@ class ChatApp(ctk.CTk):
         consume_frame = ctk.CTkFrame(self)
         consume_frame.pack(pady=(10, 0), padx=20, anchor="w")
 
-        self.energy_total_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético Total: {round(self.gasto_energetico_total, 2)}", font=ctk.CTkFont(size=self.font_size))
+        self.energy_total_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético Total: {self.gasto_energetico_total:.4f}", font=ctk.CTkFont(size=self.font_size))
         self.energy_total_consume_label.pack(side="left", padx=(0, 30))
 
-        self.energy_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético da Última Mensagem: {round(self.gasto_energetico, 2)}", font=ctk.CTkFont(size=self.font_size))
+        self.energy_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético da Última Mensagem: {self.gasto_energetico:.4f}", font=ctk.CTkFont(size=self.font_size))
         self.energy_consume_label.pack(side="left")
 
         self.messages = DEFAULT_MESSAGE_ARRAY
 
+    def animate_progress(self, start: float, end: float, duration_ms: int = 500, callback=None):
+        steps = int(duration_ms / 20)
+        delta = (end - start) / steps if steps else 0
+        def step(i=0, valor=start):
+            if i >= steps:
+                self.energy_bar.set(end)
+                if callback:
+                    callback()
+                return
+            valor += delta
+            self.energy_bar.set(valor)
+            self.after(20, lambda: step(i+1, valor))
+        step()
 
     def update_energy_bar(self, gasto):
-        index = self.calcular_estagio()
-        self.energy_label.configure(text=f"{self.labels[index]}")
-        if index < len(self.milestones):
-            inicio = (0 if index == 0 else self.milestones[index - 1])
-            fim = self.milestones[index]
-            atual = (self.gasto_energetico_total if index == 0 else self.gasto_energetico_total - self.milestones[index-1])
-            progresso = (atual / (fim - inicio))
-            self.energy_bar.set(progresso)
-        else:
-            self.energy_bar.set(100)
+        prev_total = self.gasto_energetico_total - gasto
+        new_total = self.gasto_energetico_total
+
+        def get_stage_and_rel(total):
+            for idx, m in enumerate(self.milestones):
+                if total <= m:
+                    prev = 0 if idx == 0 else self.milestones[idx-1]
+                    rel = (total - prev) / (m - prev)
+                    return idx, max(0.0, min(rel, 1.0))
+            return len(self.milestones), 1.0
+
+        old_stage, old_rel = get_stage_and_rel(prev_total)
+        new_stage, new_rel = get_stage_and_rel(new_total)
+
+        # segments para cada estágio
+        segments = []
+        for stage in range(old_stage, new_stage+1):
+            if stage == old_stage and stage == new_stage:
+                segments.append((old_rel, new_rel))
+            elif stage == old_stage:
+                segments.append((old_rel, 1.0))
+            elif stage == new_stage:
+                segments.append((0.0, new_rel))
+            else:
+                segments.append((0.0, 1.0))
+
+        def run_segment(i=0):
+            if i >= len(segments):
+                return
+            stage = old_stage + i
+            # atualiza label para o estágio atual antes de animar
+            self.energy_label.configure(text=self.labels[stage])
+            start, end = segments[i]
+            duration = int(abs(end - start) * 500) or 200
+            self.animate_progress(start, end, duration_ms=duration, callback=lambda: run_segment(i+1))
+
+        run_segment()
+
 
     def send_message(self, event=None):
         user_input = self.entry.get().strip()
@@ -180,8 +221,8 @@ class ChatApp(ctk.CTk):
 
             self.gasto_energetico = calculate_cost(input_tokens, output_tokens) * int(self.people_var.get())
             self.gasto_energetico_total += self.gasto_energetico
-            self.energy_total_consume_label.configure(text=f"Gasto Energético Total: {round(self.gasto_energetico_total, 2)} Wh.")
-            self.energy_consume_label.configure(text=f"Gasto Energético da Última Mensagem: {round(self.gasto_energetico, 2)} Wh.")
+            self.energy_total_consume_label.configure(text=f"Gasto Energético Total: {self.gasto_energetico_total:.4f} Wh.")
+            self.energy_consume_label.configure(text=f"Gasto Energético da Última Mensagem: {self.gasto_energetico:.4f} Wh.")
 
             loading_label.destroy()
             self.display_message(resposta_da_ia, is_user=False)
@@ -248,13 +289,16 @@ class ChatApp(ctk.CTk):
             
 
     def reset(self):
+        # Limpa todas as mensagens da interface
+        for widget in self.chat_frame.winfo_children():
+            widget.destroy()
         self.messages = DEFAULT_MESSAGE_ARRAY.copy()
         self.enviar_numero(self.s, RESET)
 
         self.gasto_energetico = 0
         self.gasto_energetico_total = 0
-        self.energy_total_consume_label.configure(text=f"Gasto Energético Total: {round(self.gasto_energetico_total, 2)} Wh.")
-        self.energy_consume_label.configure(text=f"Gasto Energético da Última Mensagem: {round(self.gasto_energetico, 2)} Wh.")
+        self.energy_total_consume_label.configure(text=f"Gasto Energético Total: {self.gasto_energetico_total:.4f} Wh.")
+        self.energy_consume_label.configure(text=f"Gasto Energético da Última Mensagem: {self.gasto_energetico:.4f} Wh.")
 
         self.update_energy_bar(self.gasto_energetico)
         self.enviar_numero(self.s, float(self.gasto_energetico))
