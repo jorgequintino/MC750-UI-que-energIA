@@ -66,8 +66,12 @@ class ChatApp(ctk.CTk):
                                   "Ligue uma casa por 1 dia: ": 28000.0,
                                   "Gaste toda a energia do mundo: ": 1000000.0}
         
+        # Calcula o somatório acumulado dos valores de energy_led_limits
+        self.limits_sum = [sum(list(self.energy_led_limits.values())[:i+1]) for i in range(len(self.energy_led_limits))]
+        
         self.labels = list(self.energy_led_limits.keys())
-        self.milestones = list(self.energy_led_limits.values())
+        # self.milestones = list(self.energy_led_limits.values())
+        self.milestones = self.limits_sum.copy()
 
 
     
@@ -142,8 +146,6 @@ class ChatApp(ctk.CTk):
 
         self.energy_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético da Última Mensagem: {self.gasto_energetico:.4f}", font=ctk.CTkFont(size=self.font_size))
         self.energy_consume_label.pack(side="left")
-
-        self.messages = DEFAULT_MESSAGE_ARRAY
 
 
 
@@ -361,8 +363,6 @@ class ChatApp(ctk.CTk):
 
         self.update_energy_bar(self.gasto_energetico)
         self.enviar_numero(self.s, float(self.gasto_energetico))
-
-        self.messages = DEFAULT_MESSAGE_ARRAY
     
     def enviar_numero(self, sock, numero):
         """
