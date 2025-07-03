@@ -113,6 +113,41 @@ class ChatApp(ctk.CTk):
         self.energy_consume_label = ctk.CTkLabel(consume_frame, text=f"Gasto Energético da Última Mensagem: {self.gasto_energetico:.4f}", font=ctk.CTkFont(size=self.font_size))
         self.energy_consume_label.pack(side="left")
 
+        self.after(100, self.show_welcome_overlay)
+
+
+    def show_welcome_overlay(self):
+        # Cria o overlay ocupando toda a janela principal
+        self.overlay = ctk.CTkFrame(self, fg_color="#111111", corner_radius=0)
+        self.overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        # Texto explicativo
+        texto = (
+            "👋 Bem-vindo ao UI que Delícia!\n\n"
+            "Aqui está o que você pode fazer:\n\n"
+            "✅ Escreva ou fale uma pergunta usando o botão de microfone.\n"
+            "✅ A IA responde e calcula o gasto energético da resposta.\n"
+            "✅ Escolha quantas pessoas estão fazendo a pergunta (à esquerda de Reiniciar).\n"
+            "✅ Compare o gasto com atividades do mundo real (carregar um celular).\n"
+            "✅ Veja a barra de progresso de energia.\n"
+            "✅ Ative ou desative a memória da IA.\n\n"
+            "Clique em OK para começar!"
+        )
+
+        # Caixa central com borda e padding
+        box = ctk.CTkFrame(self.overlay, fg_color="#1a1a1a", corner_radius=20)
+        box.place(relx=0.5, rely=0.5, anchor="center")
+
+        label = ctk.CTkLabel(box, text=texto, font=ctk.CTkFont(size=24), justify="left", wraplength=800)
+        label.pack(padx=30, pady=(30, 10))
+
+        ok_button = ctk.CTkButton(box, text="OK", font=ctk.CTkFont(size=22), command=self.hide_overlay)
+        ok_button.pack(pady=(0, 20))
+
+    def hide_overlay(self):
+        self.overlay.destroy()
+
+
     def toggle_memory(self):
         self.memory_on = self.mem_switch.get()
         self.mem_switch.configure(text="Memória ligada" if self.memory_on else "Memória desligada")
