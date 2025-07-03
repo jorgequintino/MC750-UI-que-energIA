@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from PIL import Image, ImageTk
 from openai_utils import gerar_resposta, inicializar_cliente, gerar_resposta_com_historico
 from OpenAI.energy_calculation import calculate_cost
 from audio_rec import interpretador_audio, microfone, transcreve_audio
@@ -22,16 +23,20 @@ class ChatApp(ctk.CTk):
         self.font_size = 22
         self.CONNECTED = False
 
-        HOST = '192.168.79.126'
+        HOST = '192.168.79.126'  # Substitua pelo IP real do Pico W2
         PORT = 12345
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.s.settimeout(10)
+        self.s.settimeout(10)  # Define um tempo limite de 5 segundos para a conexão
+        print("Tentando conectar ao servidor no IP:", HOST, "e porta:", PORT)
         try:
             self.s.connect((HOST, PORT))
             self.CONNECTED = True
-        except:
-            print("Erro ao conectar ao servidor.")
+            print("Conectado ao servidor no IP:", HOST, "e porta:", PORT)
+        except KeyboardInterrupt:
+            print("Obrigado por usar o UI, que energIA!")
+        except Exception:
+            print("Erro ao conectar ao servidor. Verifique o IP e a porta.")
 
         self.gasto_energetico_total = 0.0
         self.gasto_energetico = 0.0
@@ -87,6 +92,14 @@ class ChatApp(ctk.CTk):
         self.reset_button = ctk.CTkButton(self.entry_frame, text="Reiniciar", command=self.reset, font=ctk.CTkFont(size=self.font_size))
         self.reset_button.pack(side="left", padx=(10, 0), pady=10)
 
+        self.qr_button = ctk.CTkButton(
+            self.entry_frame,
+            text="Saber Mais",
+            command=self.mostrar_qrcode_overlay,
+            font=ctk.CTkFont(size=self.font_size)
+        )
+        self.qr_button.pack(side="left", padx=(10, 0), pady=10)
+
         self.mem_switch = ctk.CTkSwitch(self.entry_frame, text="Memória ligada", command=self.toggle_memory, font=ctk.CTkFont(size=self.font_size))
         self.mem_switch.pack(side="left", padx=(10,0), pady=10)
         self.mem_switch.select()
@@ -114,6 +127,32 @@ class ChatApp(ctk.CTk):
         self.energy_consume_label.pack(side="left")
 
         self.after(100, self.show_welcome_overlay)
+
+
+
+
+    def mostrar_qrcode_overlay(self):
+        # Cria o overlay como na tela de boas-vindas
+        self.overlay = ctk.CTkFrame(self, fg_color="#111111", corner_radius=0)
+        self.overlay.place(relx=0, rely=0, relwidth=1, relheight=1)
+
+        # Caixa central com QR Code
+        box = ctk.CTkFrame(self.overlay, fg_color="#1a1a1a", corner_radius=20)
+        box.place(relx=0.5, rely=0.5, anchor="center")
+
+        # Carrega a imagem do QR Code que você já tem (coloque o caminho certo)
+        qr_path = "qr_code.png"  # troque pelo caminho real da imagem
+        img = Image.open(qr_path).resize((300, 300))
+        self.qr_image_tk = ImageTk.PhotoImage(img)  # precisa manter referência
+
+        img_label = ctk.CTkLabel(box, image=self.qr_image_tk, text="")
+        img_label.pack(padx=30, pady=(30, 10))
+
+        text_label = ctk.CTkLabel(box, text="Escaneie para mais informações!", font=ctk.CTkFont(size=20))
+        text_label.pack(pady=(0, 10))
+
+        ok_button = ctk.CTkButton(box, text="Fechar", font=ctk.CTkFont(size=22), command=self.hide_overlay)
+        ok_button.pack(pady=(0, 20))
 
 
     def show_welcome_overlay(self):
