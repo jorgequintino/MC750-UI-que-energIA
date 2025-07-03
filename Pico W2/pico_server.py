@@ -115,7 +115,8 @@ def main():
                 if energy < 0.0:
                     energy_total = 0.0
                     LedTurnOff()
-                energy_total = energy_total + float(data.decode())
+                #energy_total = energy_total + float(data.decode())
+                energy_total = float(data.decode())
                 print("Tamanho recebido:", energy_total)
         except OSError:
             pass  # Sem dados, segue o loop normalmente
@@ -131,31 +132,33 @@ def main():
             if energy_total >= 0.75:
                 LedSelect(LED.LED0)
                 sleep_ms(200)
-            if energy_total >= 1.0:
+            if energy_total >= 1.75:
                 LedSelect(LED.LED1)
                 sleep_ms(200)
-            if energy_total >= 8.33:
+            if energy_total >= 10.08:
                 LedSelect(LED.LED2)
                 sleep_ms(200)
-            if energy_total >= 19.44:
+            if energy_total >= 29.52:
                 LedSelect(LED.LED3)
                 sleep_ms(200)
-            if energy_total >= 80.0:
+            if energy_total >= 69.52:
                 LedSelect(LED.LED4)
                 sleep_ms(200)
-            if energy_total >= 250.0:
+            if energy_total >= 149.52:
                 LedSelect(LED.LED5)
                 sleep_ms(200)
-            if energy_total >= 750.0:
+            if energy_total >= 399.52:
                 LedSelect(LED.LED6)
                 sleep_ms(200)
-            if energy_total >= 1200.0:
+            if energy_total >= 1149.52:
                 LedSelect(LED.LED7)
                 sleep_ms(200)
-            if energy_total >= 2800.0:
+            if energy_total >= 2349.52:
                 LedSelect(LED.LED8)
                 sleep_ms(200)
-            if energy_total >= 10000.0:
+            if energy_total >= 30349.52:
+                LedSelect(LED.LED9)
+            if energy_total >= 1000000.0:
                 LedSelect(LED.LED9)
         last_energy_total = energy_total
 

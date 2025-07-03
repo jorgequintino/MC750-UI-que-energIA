@@ -222,6 +222,8 @@ class ChatApp(ctk.CTk):
         old_stage, old_rel = get_stage_and_rel(prev_total)
         new_stage, new_rel = get_stage_and_rel(new_total)
 
+        print(self.milestones)
+
         label_index = new_stage
         self.left_milestone_label.configure(text="Início" if label_index == 0 else self.labels[label_index - 1])
         self.right_milestone_label.configure(text=self.labels[label_index] if label_index < len(self.labels) else "Fim")
