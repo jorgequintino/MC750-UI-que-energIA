@@ -23,7 +23,7 @@ class ChatApp(ctk.CTk):
         self.font_size = 22
         self.CONNECTED = False
 
-        HOST = '192.168.79.126'  # Substitua pelo IP real do Pico W2
+        HOST = '192.168.47.126'  # Substitua pelo IP real do Pico W2
         PORT = 12345
 
         self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

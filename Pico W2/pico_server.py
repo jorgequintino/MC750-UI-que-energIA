@@ -4,8 +4,8 @@ import network
 import socket
 import time
 
-SSID = "Doug"
-PASSWORD = "dw598103"
+SSID = "RafaelCarro"
+PASSWORD = "26112001"
 
 class LED(enumerate):
     LED0 = 0
